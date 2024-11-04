@@ -205,7 +205,7 @@
  :label (propertize (car item) 'face 'font-lock-keyword-face)
  :key 'trunk-tree-section-group
  :children (if (string= (car item) "Issues") (trunk-issues-by-file (cdr item)) ()) 
- :child-type 'trunk-tree-file-issue-group; (if (string= (car item) "Issues") 'trunk-tree-file-issue-group 'trunk-tree-failure-group)
+ :child-type 'trunk-tree-file-issue-group
  )
 
 (treemacs-define-expandable-node-type
