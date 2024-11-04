@@ -13,6 +13,8 @@
 (require 'dash)
 (require 'treemacs)
 (require 'treemacs-treelib)
+(require 'project)
+(require 'comint)
 
 (defun group-by-key (key hashlist)
   (-map
