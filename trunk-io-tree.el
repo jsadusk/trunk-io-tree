@@ -2,7 +2,7 @@
 ;; Copyright (C) 2024 Joe Sadusk
 ;; Author Joe Sadusk <joe@sadusk.com>
 ;; Version 0.0.1
-;; Package-Requires: ((dash "2.19") (treemacs 3.1))
+;; Package-Requires: ((dash "2.19") (treemacs "3.1"))
 
 ;;; Commentary
 ;; This package provides a navigable interface to the meta lint tool "trunk check"
@@ -13,8 +13,6 @@
 (require 'dash)
 (require 'treemacs)
 (require 'treemacs-treelib)
-(require 'project)
-(require 'comint)
 
 (defun group-by-key (key hashlist)
   (-map
@@ -299,6 +297,17 @@
               (push (match-string 0) matches)))))
       matches)))
 
+(defun json-at-last-line (buffer)
+  (with-current-buffer buffer
+    (progn
+      (goto-char (point-max))
+      (beginning-of-line)
+      (json-parse-buffer)        
+      )
+    )
+  )
+
+
 
 (defun trunk-check ()
   (interactive)
@@ -307,8 +316,9 @@
          (default-directory (project-root (project-current)))
          (buffer-name (concat "*trunk check <" (project-root (project-current)) ">*"))
          (trunk-buffer (get-buffer-create buffer-name))
-         (trunk-command "tools/trunk check --no-progress --output=json")
+         (trunk-command "tools/trunk check --no-progress --output=json |grep '^{.*}$'|head -n1 | sed -z '$ s/\\n$//'")
          )
+    (message trunk-command)
     (with-current-buffer trunk-buffer
       (if buffer-read-only
           (read-only-mode)
@@ -328,11 +338,9 @@
        (lambda (process event)
          (let* (
                 (trunk-buffer (process-buffer process))
-                (trunk-result-json (car (matches-in-buffer "{.*}" trunk-buffer)))
-                (trunk-result (json-parse-string trunk-result-json))
+                (trunk-result (json-at-last-line trunk-buffer))
                 )
            (message "Completed trunk check")
-           (message "%s" trunk-result-json)
            (save-selected-window
              (pop-to-buffer trunk-buffer)
              (let (
